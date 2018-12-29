@@ -1,178 +1,169 @@
-# Example usage of binning toolbox in R
-# T-Mobile HR Analytics
-# Deloitte 2018
+# Example usP001 of rbinning
 
-source("rbinning.R")
+source("src/rbinning.R")
 library(tidyverse)
 library(caret)
 
-# Loading data
-rdata = read_tsv("modeling_dataset_model_B.txt")
+# 1 load data
+rdata = read_tsv("data/modeling_dataset.txt")
 
-tnames = "target"
-
-# all predictors
-hnames = c("base_id","PIN","start_date","end_date","obs_date","predictor_date","target_start","target_end","tgf")
+# 2 identify which columns are predictors
+tnames = "T01"
+hnames = c("H01","H03","H04","H05","H06","H07","H08","H09","H02")
 pnames = names(rdata) %>% setdiff(tnames) %>% setdiff(hnames)
 
-# train/test SPLIT 80/20
+# 3 train/test SPLIT 80/20
 # deterministic way which can be reproduced in Python easily
 n = nrow(rdata)
 ntn = round(0.8*n)
 itn = seq_len(ntn)
 its = setdiff(seq_len(n), itn)
 
-#AUTOBINNING
+# 4 AUTOBINNING
 nb = 3 # desired number of bins
 
-b0 = autobinning(tbl = rdata, target = "target", predictors = pnames, itest = its, method = "EqualFrequency", nbins = nb,verbose = TRUE)
+b0 = autobinning(tbl = rdata, target = "T01", predictors = pnames, itest = its, method = "EqualFrequency", nbins = nb,verbose = TRUE)
 
-#MANUAL CORRECTIONS OF BINNING
+# 5 MANUAL CORRECTIONS OF BINNING
 b1 = b0 %>% adjust_binning(
   tbl = rdata,
   itest = its,
-  ni = "month",
-  target = "target",
+  ni = "P075",
+  target = "T01",
   code = "8",
   missbin = 2
 ) %>% adjust_binning(
   tbl = rdata,
   itest = its,
-  ni = "p_avg_fix",
-  target = "target",
+  ni = "P094",
+  target = "T01",
   code = "0.7",
   missbin = 2
 ) %>% adjust_binning(
   tbl = rdata,
   itest = its,
-  ni = "p_bonus_fulfill_3M",
-  target = "target",
+  ni = "P102",
+  target = "T01",
   code = "0.71, 1.25",
   missbin = 3
 ) %>% adjust_binning(
   tbl = rdata,
   itest = its,
-  ni = "worplace_churn_dif_6M",
-  target = "target",
+  ni = "P185",
+  target = "T01",
   code = "0, 0.36",
   missbin = 3
 ) %>% adjust_binning(
   tbl = rdata,
   itest = its,
-  ni = "sal_bonus_m_dif_6M",
-  target = "target",
+  ni = "P323",
+  target = "T01",
   code = "2.3",
   missbin = 1
 ) %>% adjust_binning(
   tbl = rdata,
   itest = its,
-  ni = "base_bon_t_3M",
-  target = "target",
+  ni = "P337",
+  target = "T01",
   code = "-0.14, 0.13",
   missbin = 3
 ) %>% adjust_binning(
   tbl = rdata,
   itest = its,
-  ni = "base_bon_t_6M",
-  target = "target",
+  ni = "P336",
+  target = "T01",
   code = "-0.05",
   missbin = 1
 ) %>% adjust_binning(
   tbl = rdata,
   itest = its,
-  ni = "bonus_fulfill_6M",
-  target = "target",
+  ni = "P070",
+  target = "T01",
   code = "1.06",
   missbin = 2
 ) %>% adjust_binning(
   tbl = rdata,
   itest = its,
-  ni = "churn_rate",
-  target = "target",
+  ni = "P074",
+  target = "T01",
   code = "0.2",
   missbin = 3
 ) %>% adjust_binning(
   tbl = rdata,
   itest = its,
-  ni = "p_sal_base_6m",
-  target = "target",
+  ni = "P152",
+  target = "T01",
   code = "1.04",
   missbin = 1
 ) %>% adjust_binning(
   tbl = rdata,
   itest = its,
-  ni = "peer_size_dif_lag",
-  target = "target",
+  ni = "P202",
+  target = "T01",
   code = "-0.01",
   missbin = 2
 ) %>% adjust_binning(
   tbl = rdata,
   itest = its,
-  ni = "sal_gross_6m",
-  target = "target",
+  ni = "P049",
+  target = "T01",
   code = "35000, 45000",
   missbin = 1
 ) %>% adjust_binning(
   tbl = rdata,
   itest = its,
-  ni = "worplace_churn_v_6M",
-  target = "target",
+  ni = "P182",
+  target = "T01",
   code = "0.01",
   missbin = 1
 ) %>% adjust_binning(
   tbl = rdata,
   itest = its,
-  ni = "base_bon_a_dif_6M",
-  target = "target",
+  ni = "P339",
+  target = "T01",
   code = "-0.14, 0.11",
   missbin = 1
 ) %>% adjust_binning(
   tbl = rdata,
   itest = its,
-  ni = "fulfill_a_dif_6M",
-  target = "target",
+  ni = "P189",
+  target = "T01",
   code = "-0.06, 0.02",
   missbin = 1
 ) %>% adjust_binning(
   tbl = rdata,
   itest = its,
-  ni = "p_abs_min_h",
-  target = "target",
+  ni = "P124",
+  target = "T01",
   code = "0.54, 1.09",
   missbin = 3
 ) %>% adjust_binning(
   tbl = rdata,
   itest = its,
-  ni = "abs_h_fte_v_6M",
-  target = "target",
+  ni = "P212",
+  target = "T01",
   code = "4.07, 11.78",
   missbin = 3
 ) %>% adjust_binning(
   tbl = rdata,
   itest = its,
-  ni = "abs_h_fte_dif_6M",
-  target = "target",
+  ni = "P215",
+  target = "T01",
   code = "0, 1.22",
   missbin = 4
 )
-# vname = "abs_h_fte_dif_6M"
-# plot_binning_train(data.bin.final[data.bin.final$varname==vname,])
-# plot_binning_test(data.bin.final[data.bin.final$varname==vname,])
-# data.bin.final[data.bin.final$varname==vname,] %>% getElement("code")
 
-# WOE TRANSFORMATION 
-binned = tbl_woe(rdata, b1, keep = c(tnames,hnames), verbose = TRUE)
-write_tsv(binned, "woe_dataset_R.txt")
+# 6 WOE TRANSFORMATION 
+wdata = tbl_woe(rdata, b1, keep = c(tnames,hnames), verbose = TRUE)
+write_tsv(wdata, "out/woe_dataset.txt")
 
-# binning plots
+# 7 binning plots
 binplots = b1 %>% arrange(desc(gini_train))
 nbp = 10
 for (i in 1:nbp){
-  
   ggplot_binning(
     binplots[i,],
-    "plots_R"
+    "out"
   )
   cat(sprintf("%d/%d\n", i, nbp))
-
 }

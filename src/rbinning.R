@@ -833,3 +833,47 @@ PSI = function(tt1, tt2) {
   }
   return(sum(PSI))
 }
+
+ggplot_binning_aux = function(plotdata, tit, st, xlab, tr) {
+  ggplot(data = plotdata) +
+    geom_col(aes(x = reorder(bin, id_bin), y = r/100), fill = "skyblue2") +
+    geom_point(aes(x = reorder(bin, id_bin), y = p/100), size = 3, color = "red") +
+    geom_line(aes(x = reorder(bin, id_bin), y = p/100, group = 2), size = 1, color = "red") +
+    geom_text(aes(x = reorder(bin, id_bin), y = r/100, label = r),
+              position = position_stack(vjust = 0.5), color = "white", size = 7, fontface = "bold")+
+    geom_text(aes(x = reorder(bin, id_bin), y = p/100, label = p),
+              position = position_stack(vjust = 1.1), color = "red", size = 7, fontface = "bold") + 
+    labs(x = xlab, 
+         y = "Relative bin size / Employee turnover rate",
+         title = tit,
+         subtitle = st) + 
+    scale_y_continuous(labels = scales::percent) + 
+    geom_hline(yintercept = tr, linetype = "dashed")+
+    theme(axis.text.x = element_text(size = 20), # angle = 45, hjust = 1
+          axis.title.x = element_text(size = 20),
+          axis.text.y = element_text(size = 20),
+          axis.title.y = element_text(size = 20),
+          plot.title = element_text(size = 22, face = "bold"),
+          plot.subtitle = element_text(size = 20))
+}
+
+ggplot_binning = function(binning_row, output_path) {
+  pred_name = binning_row$varname
+  plotdata = binning_row$binning_train[[1]]
+  tr = sum(plotdata$m)/sum(plotdata$n)
+  ggplot_binning_aux(
+    plotdata, 
+    tit = paste0("Predictor: ", pred_name), 
+    st = sprintf("Gini_train = %.2f", binning_row$gini_train), 
+    xlab = pred_name,
+    tr)
+  ggsave(sprintf("%s/%s_tn.png", output_path, pred_name), width = 16, height = 9)
+  plotdata = binning_row$binning_test[[1]]
+  ggplot_binning_aux(
+    plotdata, 
+    tit = paste0("Predictor: ", pred_name), 
+    st = sprintf("Gini_test = %.2f", binning_row$gini_test), 
+    xlab = pred_name,
+    tr)
+  ggsave(sprintf("%s/%s_ts.png", output_path, pred_name), width = 16, height = 9)
+}
